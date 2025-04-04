@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Book Recommender</title>
+  <link rel="stylesheet" href="dark-gradient-style.css">
+</head>
+<body>
+  <header>
+    <h1>AI Book Recommender</h1>
+    <p>Powered by Open Library API</p>
+  </header>
+  <main>
+    <form id="preferenceForm">
+      <label for="genre">Choose your favorite genre:</label>
+      <select id="genre">
+        <option>Fiction</option>
+        <option>Non-fiction</option>
+        <option>Mystery</option>
+        <option>Fantasy</option>
+        <option>Science Fiction</option>
+        <option>Romance</option>
+        <option>Self-Help</option>
+      </select>
+      <label for="keywords">What are you in the mood for?</label>
+      <input type="text" id="keywords" placeholder="e.g., time travel, motivation" />
+      <button type="submit">Get Recommendations</button>
+    </form>
+    <div class="results" id="results"></div>
+  </main>
+
+  <script>
+    document.getElementById('preferenceForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const genre = document.getElementById('genre').value;
+      const keywords = document.getElementById('keywords').value.trim();
+      const query = `${genre} ${keywords}`;
+      const resultsDiv = document.getElementById('results');
+
+      resultsDiv.innerHTML = '<p>Loading recommendations...</p>';
+
+      try {
+        const response = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+
+        if (!data.docs || data.docs.length === 0) {
+          resultsDiv.innerHTML = '<p>No results found.</p>';
+          return;
+        }
+
+        resultsDiv.innerHTML = '<h2>Recommended Books</h2>' +
+          data.docs.slice(0, 5).map(book => `
+            <div class="book">
+              <strong>${book.title}</strong><br>
+              <em>${book.author_name ? book.author_name.join(', ') : 'Unknown Author'}</em>
+            </div>
+          `).join('');
+
+        document.querySelectorAll('.book').forEach((book, index) => {
+          setTimeout(() => {
+            book.classList.add('show');
+          }, index * 200);
+        });
+      } catch (error) {
+        resultsDiv.innerHTML = '<p>Something went wrong. Please try again later.</p>';
+        console.error(error);
+      }
+    });
+  </script>
+</body>
+</html>
